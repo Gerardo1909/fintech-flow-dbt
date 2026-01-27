@@ -1,8 +1,7 @@
-name: 'fintech_flow'
-version: '1.0.0'
+name: "fintech_flow"
+version: "1.0.0"
 
-profile: 'fintech_profile'
-
+profile: "fintech_profile"
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -11,10 +10,9 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:        
+clean-targets:
   - "target"
   - "dbt_packages"
-
 
 models:
   fintech_flow:
@@ -25,8 +23,7 @@ models:
     marts:
       +materialized: table
 
-
 seeds:
-  fintech_flow: 
+  fintech_flow:
     +column_types:
       cbu: varchar
