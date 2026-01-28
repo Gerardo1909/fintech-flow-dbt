@@ -160,7 +160,7 @@ models:
           - relationships:
               field: employee_id
               to: ref('stg_bank_employees')
-      - name: branch
+      - name: branch_id
         description: "Sucursal donde trabaja el empleado (FK de bank_employees.branch_id hacia branches.branch_id)."
         tests:
           - relationships:
