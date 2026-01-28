@@ -1,0 +1,174 @@
+version: 2
+
+models:
+  - name: int_transactions_enriched
+    description: |
+      Tabla de transacciones desnormalizada con métricas de tiempo, información de cuenta ejecutora,
+      información de cliente y diversos campos calculados enfocados a medir la transacción.
+    columns:
+      - name: transaction_id
+        description: "ID único de la transacción (PK)."
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              field: transaction_id
+              to: ref('stg_transactions')
+      - name: account_id
+        description: "ID de la cuenta que ejecuta la transacción (FK de transactions.account_id hacia accounts.account_id)."
+        tests:
+          - relationships:
+              field: account_id
+              to: ref('stg_accounts')
+      - name: customer_id
+        description: "ID del cliente que ejecuta la transacción (FK de accounts.customer_id hacia customers.customer_id)."
+        tests:
+          - relationships:
+              field: customer_id
+              to: ref('stg_customers')
+      - name: account_type_id
+        description: "ID del tipo de cuenta que ejecuta la transacción (FK de accounts.account_type_id hacia account_types.account_type_id)."
+        tests:
+          - relationships:
+              field: account_type_id
+              to: ref('stg_account_types')
+      - name: transaction_type_description
+        description: "Clasificación derivada: 'income' si el monto es positivo, 'expense' si es negativo."
+        tests:
+          - accepted_values:
+              values: ["income", "expense"]
+      - name: transaction_failed
+        description: "Flag booleano que indica si la transacción falló según el status origen."
+
+  - name: int_transfers_enriched
+    description: "Transferencias entre cuentas con detalles de emisor y receptor enriquecidos."
+    columns:
+      - name: transfer_id
+        description: "ID único de la transferencia (PK)."
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              field: transfer_id
+              to: ref('stg_transfers')
+      - name: sender
+        description: "ID de la cuenta que envia el dinero (FK de transfers.from_account_id hacia accounts.account_id)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: account_id
+      - name: receiver
+        description: "ID de la cuenta que recibe el dinero (FK de transfers.to_account_id hacia accounts.account_id)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accounts')
+              field: account_id
+      - name: amount_category
+        description: "Categorización del monto: low_amount (<100), medium_amount (100-500), high_amount (>500)."
+        tests:
+          - accepted_values:
+              values: ["low_amount", "medium_amount", "high_amount"]
+      - name: transfer_cancelled
+        description: "Flag booleano que indica si la transferencia fue cancelada según el status de origen."
+
+  - name: int_customers_enriched
+    description: "Perfil enriquecido del cliente, incluyendo métricas enfocadas en preferencias y comportamiento en inversiones."
+    columns:
+      - name: customer_id
+        description: "ID único del cliente (PK)."
+        tests:
+          - not_null
+          - relationships:
+              field: customer_id
+              to: ref('stg_customers')
+      - name: account_id
+        description: "ID de la cuenta que posee el cliente (FK de accounts.customer_id hacia customers.customer_id)."
+        tests:
+          - relationships:
+              field: account_id
+              to: ref('stg_accounts')
+      - name: account_type_id
+        description: "ID del tipo de cuenta que posee el cliente (FK de accounts.account_type_id hacia account_types.account_type_id)."
+        tests:
+          - relationships:
+              field: account_type_id
+              to: ref('stg_account_types')
+      - name: card_id
+        description: "ID de la tarjeta que posee el cliente (FK de cards.account_id hacia accounts.account_id)."
+        tests:
+          - relationships:
+              field: card_id
+              to: ref('stg_cards')
+      - name: top_investment_type
+        description: "Tipo de inversión preferida del cliente basada en el ranking de capital invertido y cantidad de operaciones."
+      - name: total_invested_amount
+        description: "Monto total histórico invertido (Quantity * Purchase Price)."
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments: ">= 0"
+      - name: total_investments
+        description: "Cantidad total de operaciones de inversión realizadas por el cliente."
+
+  - name: int_loan_payments_enriched
+    description: "Detalle de pagos de préstamos con métricas de cumplimiento, tiempos, porcentajes de pago y mora."
+    columns:
+      - name: payment_id
+        description: "ID único del pago de préstamo (PK)."
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              field: payment_id
+              to: ref('stg_loan_payments')
+      - name: loan_id
+        description: "ID del préstamo hacia el cual hace referencia este pago (FK de loan_payments.loan_id hacia loans.loan_id)"
+        tests:
+          - not_null
+          - relationships:
+              field: loan_id
+              to: ref('stg_loans')
+      - name: customer_id
+        description: "ID del cliente que realiza el pago (FK de loans.customer_id hacia customers.customer_id)"
+        tests:
+          - not_null
+          - relationships:
+              field: customer_id
+              to: ref('stg_customers')
+      - name: is_late_payment
+        description: "Flag booleano que indica si es un pago atrasado."
+      - name: pct_principal_covered_by_payment
+        description: "Porcentaje del capital total del préstamo que representa este pago individual."
+      - name: days_since_loan_start
+        description: "Días transcurridos entre la fecha de inicio del préstamo y este pago."
+
+  - name: int_bank_employees_enriched
+    description: "Estructura organizacional del banco incluyendo jerarquía de managers y análisis salarial por sucursal."
+    columns:
+      - name: employee_id
+        description: "ID único del empleado (PK)."
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              field: employee_id
+              to: ref('stg_bank_employees')
+      - name: branch_manager_id
+        description: "ID del gerente de la sucursal donde trabaja el empleado (FK de branches.manager_employee_id hacia bank_employees.employee_id)."
+        tests:
+          - relationships:
+              field: employee_id
+              to: ref('stg_bank_employees')
+      - name: branch
+        description: "Sucursal donde trabaja el empleado (FK de bank_employees.branch_id hacia branches.branch_id)."
+        tests:
+          - relationships:
+              field: branch_id
+              to: ref('stg_branches')
+      - name: salary_vs_branch_avg_ratio
+        description: "Ratio del salario del empleado vs el promedio de su sucursal. > 1 significa que gana más que el promedio."
+      - name: years_in_company
+        description: "Antigüedad del empleado calculada en años desde hire_date."
+      - name: is_top_salary_tier
+        description: "Flag booleano que indica si el empleado está en el top de salarios de su sucursal."
