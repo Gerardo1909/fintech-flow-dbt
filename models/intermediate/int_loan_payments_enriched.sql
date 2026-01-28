@@ -16,7 +16,6 @@ loan_payments_enriched as (
         lp.payment_id,
         lp.loan_id,
         l.customer_id,
-        c.preferred_branch_id,
 
         -- Información del cliente
         c.full_name as customer_full_name,
