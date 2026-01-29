@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  # --- DIMENSIONES ---
+  - name: dim_customers
+    description: |
+      **Tipo:** SCD Tipo 2.
+      **Granularidad:** Una fila por cada versión del cliente.
+      **Descripción:** Tabla maestra de clientes. Contiene datos demográficos, credit score y flags de VIP.
+      Permite análisis histórico de cambios en el perfil de riesgo.
+    columns:
+      - name: customer_key
+        description: "Hash único para la versión del registro (SCD2)."
+
+  - name: dim_accounts
+    description: |
+      **Tipo:** SCD Tipo 1.
+      **Granularidad:** Una fila por cada cuenta bancaria única.
+      **Descripción:** Tabla descriptiva de las cuentas (moneda, tipo, CBU, estado).
+      Unida a los hechos permite segmentar movimientos por tipo de divisa y tipo.
+
+  - name: dim_branches
+    description: |
+      **Tipo:** SCD Tipo 1.
+      **Granularidad:** Una fila por sucursal física.
+      **Descripción:** Tabla maestra de sucursales. Contiene datos geográficos y de gestión.
+
+  - name: dim_date
+    description: |
+      **Tipo:** Dimensión Estática / Referencia.
+      **Granularidad:** Un registro por día calendario.
+      **Descripción:** Tabla de apoyo para operaciones BI relacionadas a temporalidad.
+
+  # --- HECHOS ---
+  - name: fact_transactions
+    description: |
+      **Tipo de Hecho:** Transaccional.
+      **Granularidad:** Una fila por cada movimiento individual en una cuenta (débito/crédito).
+      **Descripción:** Registro de toda la actividad operativa.
+      *Métrica Clave:* `transaction_amount` (positivo para ingresos, negativo para egresos).
+
+  - name: fact_transfers
+    description: |
+      **Tipo de Hecho:** Transaccional.
+      **Granularidad:** Un registro por evento de transferencia.
+      **Descripción:** Hecho específico para movimientos entre cuentas internas.
+      *Nota:* Los montos de transferencias canceladas se registran pero se marcan con un flag de anulación.
+
+  - name: fact_loan_payments
+    description: |
+      **Tipo de Hecho:** Transaccional / Amortización.
+      **Granularidad:** Una fila por cada pago realizado a un préstamo.
+      **Descripción:** Hecho para el seguimiento de cobranzas y salud de cartera crediticia.
+      *Métricas Clave:* `interest_paid`, `principal_paid`, y `late_fee` (mora).
+
+  - name: fact_investments
+    description: |
+      **Tipo de Hecho:** Periodic Snapshot / Estado.
+      **Granularidad:** Una fila por cada activo financiero en posesión del cliente.
+      **Descripción:** Refleja la posición actual de inversiones.
+      Permite calcular el PnL (Profit and Loss) comparando `purchase_price` vs `current_price`.
