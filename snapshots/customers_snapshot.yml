@@ -1,0 +1,11 @@
+snapshots:
+  - name: customers_snapshot
+    relation: ref('stg_customers')
+    config:
+      schema: snapshots
+      unique_key: customer_id
+      strategy: check
+      check_cols:
+        ["address", "city", "email", "phone", "credit_score", "is_vip"]
+      hard_delete: ignore
+      dbt_valid_to_current: "date('9999-12-31')"

@@ -17,6 +17,7 @@ profiles.yml
 fintech_flow.duckdb
 *.csv
 .user.yml
+data/
 
 # dbt artifacts
 target/

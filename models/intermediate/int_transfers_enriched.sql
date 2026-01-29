@@ -47,7 +47,8 @@ transfers_enriched as (
         case
             when t.status = 'cancelled' then True
             else False
-        end as transfer_cancelled
+        end as transfer_cancelled,
+        t.amount as transfer_amount
 
     from transfers as t
     join accounts as fa on t.from_account_id = fa.account_id
