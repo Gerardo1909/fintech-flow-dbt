@@ -1,354 +1,384 @@
 version: 2
 
 sources:
-  - name: raw_fintech
-    schema: main
-    description: "Fuentes crudas del dataset financiero: clientes, cuentas, tarjetas, transacciones, préstamos, inversiones y tipos de cambio."
-    meta:
-      owner: "equipo-data"
-      business_contact: "gerardotoboso1909@gmail.com"
-      source_type: "seed"
-      license: "CC0"
-      tags: ["raw", "seed", "fintech"]
-    tables:
-      - name: finanzas_account_types
-        description: "Catálogo de tipos de cuenta y sus parámetros financieros."
-        columns:
-          - name: account_type_id
-            description: "ID único del tipo de cuenta (PK)."
-            tests: [unique, not_null]
-          - name: type_name
-            description: "Nombre del tipo de cuenta (ej. 'Cuenta Corriente')."
-          - name: currency
-            description: "Moneda de la cuenta (ej. ARS, USD)."
-          - name: min_balance
-            description: "Saldo mínimo requerido para la cuenta."
-          - name: monthly_fee
-            description: "Costo mensual de mantenimiento."
-          - name: interest_rate
-            description: "Tasa de interés aplicada."
-          - name: allows_overdraft
-            description: "Flag que indica si permite sobregiro (true/false)."
+    - name: raw_fintech
+      schema: main
+      description: "Fuentes crudas del dataset financiero: clientes, cuentas, tarjetas, transacciones, préstamos, inversiones y tipos de cambio."
+      meta:
+          owner: "equipo-data"
+          business_contact: "gerardotoboso1909@gmail.com"
+          source_type: "seed"
+          license: "CC0"
+          tags: ["raw", "seed", "fintech"]
+      tables:
+          - name: finanzas_account_types
+            description: "Catálogo de tipos de cuenta y sus parámetros financieros."
+            columns:
+                - name: account_type_id
+                  description: "ID único del tipo de cuenta (PK)."
+                  tests: [unique, not_null]
+                - name: type_name
+                  description: "Nombre del tipo de cuenta (ej. 'Cuenta Corriente')."
+                - name: currency
+                  description: "Moneda de la cuenta (ej. ARS, USD)."
+                - name: min_balance
+                  description: "Saldo mínimo requerido para la cuenta."
+                - name: monthly_fee
+                  description: "Costo mensual de mantenimiento."
+                - name: interest_rate
+                  description: "Tasa de interés aplicada."
+                - name: allows_overdraft
+                  description: "Flag que indica si permite sobregiro (true/false)."
 
-      - name: finanzas_accounts
-        description: "Cuentas bancarias de clientes con saldo y metadatos."
-        columns:
-          - name: account_id
-            description: "ID único de la cuenta (PK)."
-            tests: [unique, not_null]
-          - name: customer_id
-            description: "ID del cliente propietario (FK hacia customers.customer_id)."
-            tests: [not_null]
-          - name: account_type_id
-            description: "Tipo de cuenta (FK hacia account_types.account_type_id)."
-            tests: [not_null]
-          - name: account_number
-            description: "Número público de la cuenta (formato alfanumérico)."
-          - name: cbu
-            description: "Identificador bancario (CBU)."
-          - name: balance
-            description: "Saldo actual de la cuenta (numérico)."
-          - name: opened_date
-            description: "Fecha de apertura de la cuenta."
-          - name: status
-            description: "Estado de la cuenta (ej. active, closed, frozen)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["active", "closed", "frozen"]
-                  severity: warn
-          - name: last_activity_date
-            description: "Fecha de la última actividad registrada."
+          - name: finanzas_accounts
+            description: "Cuentas bancarias de clientes con saldo y metadatos."
+            columns:
+                - name: account_id
+                  description: "ID único de la cuenta (PK)."
+                  tests: [unique, not_null]
+                - name: customer_id
+                  description: "ID del cliente propietario (FK hacia customers.customer_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: customer_id
+                            to: source('raw_fintech', 'finanzas_customers')
+                - name: account_type_id
+                  description: "Tipo de cuenta (FK hacia account_types.account_type_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: account_type_id
+                            to: source('raw_fintech', 'finanzas_account_types')
+                - name: account_number
+                  description: "Número público de la cuenta (formato alfanumérico)."
+                - name: cbu
+                  description: "Identificador bancario (CBU)."
+                - name: balance
+                  description: "Saldo actual de la cuenta (numérico)."
+                - name: opened_date
+                  description: "Fecha de apertura de la cuenta."
+                - name: status
+                  description: "Estado de la cuenta (ej. active, closed, frozen)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["active", "closed", "frozen"]
+                            severity: warn
+                - name: last_activity_date
+                  description: "Fecha de la última actividad registrada."
 
-      - name: finanzas_bank_employees
-        description: "Registro de empleados del banco y su asignación por sucursal."
-        columns:
-          - name: employee_id
-            description: "ID único del empleado (PK)."
-            tests: [unique, not_null]
-          - name: branch_id
-            description: "Sucursal asociada (FK hacia branches.branch_id)."
-            tests: [not_null]
-          - name: first_name
-            description: "Nombre del empleado."
-          - name: last_name
-            description: "Apellido del empleado."
-          - name: role
-            description: "Cargo o rol del empleado."
-          - name: email
-            description: "Correo electrónico del empleado."
-          - name: hire_date
-            description: "Fecha de contratación."
-          - name: salary
-            description: "Salario declarado."
-          - name: is_active
-            description: "Flag que indica si el empleado está activo (true/false)."
+          - name: finanzas_bank_employees
+            description: "Registro de empleados del banco y su asignación por sucursal."
+            columns:
+                - name: employee_id
+                  description: "ID único del empleado (PK)."
+                  tests: [unique, not_null]
+                - name: branch_id
+                  description: "Sucursal asociada (FK hacia branches.branch_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: branch_id
+                            to: source('raw_fintech', 'finanzas_branches')
+                - name: first_name
+                  description: "Nombre del empleado."
+                - name: last_name
+                  description: "Apellido del empleado."
+                - name: role
+                  description: "Cargo o rol del empleado."
+                - name: email
+                  description: "Correo electrónico del empleado."
+                - name: hire_date
+                  description: "Fecha de contratación."
+                - name: salary
+                  description: "Salario declarado."
+                - name: is_active
+                  description: "Flag que indica si el empleado está activo (true/false)."
 
-      - name: finanzas_branches
-        description: "Información de sucursales bancarias."
-        columns:
-          - name: branch_id
-            description: "ID único de la sucursal (PK)."
-            tests: [unique, not_null]
-          - name: branch_name
-            description: "Nombre de la sucursal."
-          - name: city
-            description: "Ciudad donde está ubicada la sucursal."
-          - name: address
-            description: "Dirección física."
-          - name: phone
-            description: "Teléfono de contacto."
-          - name: manager_id
-            description: "ID del empleado manager (posible FK hacia bank_employees.employee_id)."
-          - name: opened_date
-            description: "Fecha de apertura de la sucursal."
-          - name: is_active
-            description: "Flag de actividad de la sucursal (true/false)."
+          - name: finanzas_branches
+            description: "Información de sucursales bancarias."
+            columns:
+                - name: branch_id
+                  description: "ID único de la sucursal (PK)."
+                  tests: [unique, not_null]
+                - name: branch_name
+                  description: "Nombre de la sucursal."
+                - name: city
+                  description: "Ciudad donde está ubicada la sucursal."
+                - name: address
+                  description: "Dirección física."
+                - name: phone
+                  description: "Teléfono de contacto."
+                - name: manager_id
+                  description: "ID del empleado manager (posible FK hacia bank_employees.employee_id)."
+                  tests:
+                      - relationships:
+                            to: source('raw_fintech', 'finanzas_bank_employees')
+                            field: employee_id
+                - name: opened_date
+                  description: "Fecha de apertura de la sucursal."
+                - name: is_active
+                  description: "Flag de actividad de la sucursal (true/false)."
 
-      - name: finanzas_cards
-        description: "Tarjetas emitidas asociadas a cuentas."
-        meta:
-          sensitivity: masked
-        columns:
-          - name: card_id
-            description: "ID único de la tarjeta (PK)."
-            tests: [unique, not_null]
-          - name: account_id
-            description: "Cuenta asociada (FK hacia accounts.account_id)."
-            tests: [not_null]
-          - name: card_type
-            description: "Tipo de tarjeta (credit, debit, prepaid)."
-          - name: card_brand
-            description: "Marca de la tarjeta (Visa, Mastercard, etc.)."
-          - name: card_number_last4
-            description: "Últimos 4 dígitos del número de tarjeta (sensibles, mantener masked)."
-          - name: expiry_date
-            description: "Fecha de vencimiento de la tarjeta."
-          - name: credit_limit
-            description: "Límite de crédito (si aplica)."
-          - name: is_active
-            description: "Flag indicando si la tarjeta está activa."
-          - name: issued_date
-            description: "Fecha de emisión."
+          - name: finanzas_cards
+            description: "Tarjetas emitidas asociadas a cuentas."
+            meta:
+                sensitivity: masked
+            columns:
+                - name: card_id
+                  description: "ID único de la tarjeta (PK)."
+                  tests: [unique, not_null]
+                - name: account_id
+                  description: "Cuenta asociada (FK hacia accounts.account_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: account_id
+                            to: source('raw_fintech', 'finanzas_accounts')
+                - name: card_type
+                  description: "Tipo de tarjeta (credit, debit, prepaid)."
+                - name: card_brand
+                  description: "Marca de la tarjeta (Visa, Mastercard, etc.)."
+                - name: card_number_last4
+                  description: "Últimos 4 dígitos del número de tarjeta (sensibles, mantener masked)."
+                - name: expiry_date
+                  description: "Fecha de vencimiento de la tarjeta."
+                - name: credit_limit
+                  description: "Límite de crédito (si aplica)."
+                - name: is_active
+                  description: "Flag indicando si la tarjeta está activa."
+                - name: issued_date
+                  description: "Fecha de emisión."
 
-      - name: finanzas_customers
-        description: "Datos personales de los clientes."
-        meta:
-          sensitivity: high
-          pii: true
-        columns:
-          - name: customer_id
-            description: "ID único del cliente (PK)."
-            tests: [unique, not_null]
-          - name: first_name
-            description: "Nombre del cliente."
-          - name: last_name
-            description: "Apellido del cliente."
-          - name: dni
-            description: "Documento nacional / identificador (sensible)."
-          - name: email
-            description: "Correo electrónico (sensible)."
-          - name: phone
-            description: "Teléfono de contacto."
-          - name: address
-            description: "Dirección postal."
-          - name: city
-            description: "Ciudad de residencia."
-          - name: birth_date
-            description: "Fecha de nacimiento."
-          - name: registration_date
-            description: "Fecha de registro en el sistema."
-          - name: credit_score
-            description: "Puntaje crediticio."
-          - name: is_vip
-            description: "Flag para clientes VIP."
-          - name: preferred_branch_id
-            description: "Sucursal preferida (FK hacia branches.branch_id)."
+          - name: finanzas_customers
+            description: "Datos personales de los clientes."
+            meta:
+                sensitivity: high
+                pii: true
+            columns:
+                - name: customer_id
+                  description: "ID único del cliente (PK)."
+                  tests: [unique, not_null]
+                - name: first_name
+                  description: "Nombre del cliente."
+                - name: last_name
+                  description: "Apellido del cliente."
+                - name: dni
+                  description: "Documento nacional / identificador (sensible)."
+                - name: email
+                  description: "Correo electrónico (sensible)."
+                - name: phone
+                  description: "Teléfono de contacto."
+                - name: address
+                  description: "Dirección postal."
+                - name: city
+                  description: "Ciudad de residencia."
+                - name: birth_date
+                  description: "Fecha de nacimiento."
+                - name: registration_date
+                  description: "Fecha de registro en el sistema."
+                - name: credit_score
+                  description: "Puntaje crediticio."
+                - name: is_vip
+                  description: "Flag para clientes VIP."
+                - name: preferred_branch_id
+                  description: "Sucursal preferida (FK hacia branches.branch_id)."
+                  tests:
+                      - relationships:
+                            field: branch_id
+                            to: source('raw_fintech', 'finanzas_branches')
 
-      - name: finanzas_exchange_rates
-        description: "Tipos de cambio históricos por fecha."
-        columns:
-          - name: rate_id
-            description: "ID único del registro (PK)."
-            tests: [unique, not_null]
-          - name: date
-            description: "Fecha del tipo de cambio."
-            tests: [not_null]
-          - name: currency_from
-            description: "Moneda origen."
-          - name: currency_to
-            description: "Moneda destino."
-          - name: buy_rate
-            description: "Tipo de cambio de compra."
-          - name: sell_rate
-            description: "Tipo de cambio de venta."
+          - name: finanzas_exchange_rates
+            description: "Tipos de cambio históricos por fecha."
+            columns:
+                - name: rate_id
+                  description: "ID único del registro (PK)."
+                  tests: [unique, not_null]
+                - name: date
+                  description: "Fecha del tipo de cambio."
+                  tests:
+                      - not_null
+                - name: currency_from
+                  description: "Moneda origen."
+                - name: currency_to
+                  description: "Moneda destino."
+                - name: buy_rate
+                  description: "Tipo de cambio de compra."
+                - name: sell_rate
+                  description: "Tipo de cambio de venta."
 
-      - name: finanzas_investments
-        description: "Inversiones de clientes (acciones, bonos, fondos, etc.)."
-        columns:
-          - name: investment_id
-            description: "ID único de la inversión (PK)."
-            tests: [unique, not_null]
-          - name: customer_id
-            description: "Cliente propietario (FK hacia customers.customer_id)."
-            tests: [not_null]
-          - name: investment_type
-            description: "Tipo de inversión (stocks, bonds, mutual_funds, crypto, fixed_term)."
-          - name: symbol
-            description: "Símbolo o identificador del activo."
-          - name: quantity
-            description: "Cantidad de unidades del activo."
-          - name: purchase_price
-            description: "Precio de compra por unidad."
-          - name: current_price
-            description: "Precio actual por unidad."
-          - name: purchase_date
-            description: "Fecha de compra."
-          - name: status
-            description: "Estado de la inversión (holding, sold)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["holding", "sold"]
-                  severity: warn
+          - name: finanzas_investments
+            description: "Inversiones de clientes (acciones, bonos, fondos, etc.)."
+            columns:
+                - name: investment_id
+                  description: "ID único de la inversión (PK)."
+                  tests: [unique, not_null]
+                - name: customer_id
+                  description: "Cliente propietario (FK hacia customers.customer_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: customer_id
+                            to: source('raw_fintech', 'finanzas_customers')
+                - name: investment_type
+                  description: "Tipo de inversión (stocks, bonds, mutual_funds, crypto, fixed_term)."
+                - name: symbol
+                  description: "Símbolo o identificador del activo."
+                - name: quantity
+                  description: "Cantidad de unidades del activo."
+                - name: purchase_price
+                  description: "Precio de compra por unidad."
+                - name: current_price
+                  description: "Precio actual por unidad."
+                - name: purchase_date
+                  description: "Fecha de compra."
+                - name: status
+                  description: "Estado de la inversión (holding, sold)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["holding", "sold"]
+                            severity: warn
 
-      - name: finanzas_loan_payments
-        description: "Pagos realizados sobre préstamos."
-        columns:
-          - name: payment_id
-            description: "ID único del pago (PK)."
-            tests: [unique, not_null]
-          - name: loan_id
-            description: "Préstamo asociado (FK hacia loans.loan_id)."
-            tests: [not_null]
-          - name: payment_date
-            description: "Fecha del pago."
-          - name: amount
-            description: "Monto total del pago."
-          - name: principal_paid
-            description: "Porción aplicada a capital."
-          - name: interest_paid
-            description: "Porción aplicada a interés."
-          - name: late_fee
-            description: "Cargo por pago tardío, si aplica."
-          - name: status
-            description: "Estado del pago (on_time, late, missed)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["on_time", "late", "missed"]
-                  severity: warn
+          - name: finanzas_loan_payments
+            description: "Pagos realizados sobre préstamos."
+            columns:
+                - name: payment_id
+                  description: "ID único del pago (PK)."
+                  tests: [unique, not_null]
+                - name: loan_id
+                  description: "Préstamo asociado (FK hacia loans.loan_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: loan_id
+                            to: source('raw_fintech', 'finanzas_loans')
+                - name: payment_date
+                  description: "Fecha del pago."
+                - name: amount
+                  description: "Monto total del pago."
+                - name: principal_paid
+                  description: "Porción aplicada a capital."
+                - name: interest_paid
+                  description: "Porción aplicada a interés."
+                - name: late_fee
+                  description: "Cargo por pago tardío, si aplica."
+                - name: status
+                  description: "Estado del pago (on_time, late, missed)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["on_time", "late", "missed"]
+                            severity: warn
 
-      - name: finanzas_loans
-        description: "Préstamos otorgados a clientes con términos y estado."
-        columns:
-          - name: loan_id
-            description: "ID único del préstamo (PK)."
-            tests: [unique, not_null]
-          - name: customer_id
-            description: "Cliente que recibió el préstamo (FK hacia customers.customer_id)."
-            tests: [not_null]
-          - name: loan_type
-            description: "Tipo de préstamo (personal, mortgage, student, business, auto)."
-          - name: principal_amount
-            description: "Monto principal original."
-          - name: interest_rate
-            description: "Tasa de interés aplicada."
-          - name: term_months
-            description: "Plazo en meses."
-          - name: monthly_payment
-            description: "Monto de la cuota mensual."
-          - name: start_date
-            description: "Fecha de inicio del préstamo."
-          - name: end_date
-            description: "Fecha de finalización prevista."
-          - name: status
-            description: "Estado actual del préstamo (active, paid_off, defaulted)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["active", "paid_off", "defaulted"]
-                  severity: warn
-          - name: collateral
-            description: "Colateral declarado, si aplica."
+          - name: finanzas_loans
+            description: "Préstamos otorgados a clientes con términos y estado."
+            columns:
+                - name: loan_id
+                  description: "ID único del préstamo (PK)."
+                  tests: [unique, not_null]
+                - name: customer_id
+                  description: "Cliente que recibió el préstamo (FK hacia customers.customer_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: customer_id
+                            to: source('raw_fintech', 'finanzas_customers')
+                - name: loan_type
+                  description: "Tipo de préstamo (personal, mortgage, student, business, auto)."
+                - name: principal_amount
+                  description: "Monto principal original."
+                - name: interest_rate
+                  description: "Tasa de interés aplicada."
+                - name: term_months
+                  description: "Plazo en meses."
+                - name: monthly_payment
+                  description: "Monto de la cuota mensual."
+                - name: start_date
+                  description: "Fecha de inicio del préstamo."
+                - name: end_date
+                  description: "Fecha de finalización prevista."
+                - name: status
+                  description: "Estado actual del préstamo (active, paid_off, defaulted)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["active", "paid_off", "defaulted"]
+                            severity: warn
+                - name: collateral
+                  description: "Colateral declarado, si aplica."
 
-      - name: finanzas_transactions
-        description: "Transacciones de cuentas (débitos, créditos y eventos financieros)."
-        config:
-          freshness:
-            warn_after:
-              count: 4
-              period: hour
-            error_after:
-              count: 8
-              period: hour
-          loaded_at_field: transaction_date
-        columns:
-          - name: transaction_id
-            description: "ID único de la transacción (PK)."
-            tests: [unique, not_null]
-          - name: account_id
-            description: "Cuenta afectada por la transacción (FK hacia accounts.account_id)."
-            tests: [not_null]
-          - name: transaction_type
-            description: "Tipo de transacción (withdrawal, deposit, card_payment, fee, transfer_in/out, etc.)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values:
-                      [
-                        "withdrawal",
-                        "deposit",
-                        "card_payment",
-                        "fee",
-                        "transfer_in",
-                        "transfer_out",
-                        "atm_withdrawal",
-                        "card_refund",
-                      ]
-                  severity: warn
-          - name: amount
-            description: "Monto de la transacción (positivo para abonos, negativo para débitos)."
-          - name: balance_after
-            description: "Saldo de la cuenta luego de la transacción."
-          - name: transaction_date
-            description: "Fecha y hora en que ocurrió la transacción."
-          - name: description
-            description: "Descripción textual o merchant asociado."
-          - name: reference_number
-            description: "Número de referencia o comprobante."
-          - name: channel
-            description: "Canal de la operación (online, atm, branch, mobile, pos)."
-          - name: status
-            description: "Estado de la transacción (completed, pending, failed)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["completed", "pending", "failed"]
-                  severity: warn
+          - name: finanzas_transactions
+            description: "Transacciones de cuentas (débitos, créditos y eventos financieros)."
+            config:
+                freshness:
+                    warn_after:
+                        count: 4
+                        period: hour
+                    error_after:
+                        count: 8
+                        period: hour
+                loaded_at_field: transaction_date
+            columns:
+                - name: transaction_id
+                  description: "ID único de la transacción (PK)."
+                  tests: [unique, not_null]
+                - name: account_id
+                  description: "Cuenta afectada por la transacción (FK hacia accounts.account_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            to: source('raw_fintech', 'finanzas_accounts')
+                            field: account_id
+                - name: transaction_type
+                  description: "Tipo de transacción (withdrawal, deposit, card_payment, fee, transfer_in/out, etc.)."
+                - name: amount
+                  description: "Monto de la transacción (positivo para abonos, negativo para débitos)."
+                - name: balance_after
+                  description: "Saldo de la cuenta luego de la transacción."
+                - name: transaction_date
+                  description: "Fecha y hora en que ocurrió la transacción."
+                - name: description
+                  description: "Descripción textual o merchant asociado."
+                - name: reference_number
+                  description: "Número de referencia o comprobante."
+                - name: channel
+                  description: "Canal de la operación (online, atm, branch, mobile, pos)."
+                - name: status
+                  description: "Estado de la transacción (completed, pending, failed)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["completed", "pending", "failed"]
+                            severity: warn
 
-      - name: finanzas_transfers
-        description: "Transferencias entre cuentas (internas)."
-        columns:
-          - name: transfer_id
-            description: "ID único de la transferencia (PK)."
-            tests: [unique, not_null]
-          - name: from_account_id
-            description: "Cuenta origen (FK hacia accounts.account_id)."
-            tests: [not_null]
-          - name: to_account_id
-            description: "Cuenta destino (FK hacia accounts.account_id)."
-            tests: [not_null]
-          - name: amount
-            description: "Monto transferido."
-          - name: transfer_date
-            description: "Fecha y hora de la transferencia."
-          - name: concept
-            description: "Concepto o nota de la transferencia."
-          - name: status
-            description: "Estado de la transferencia (completed, pending, cancelled)."
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ["completed", "pending", "cancelled"]
-                  severity: warn
+          - name: finanzas_transfers
+            description: "Transferencias entre cuentas (internas)."
+            columns:
+                - name: transfer_id
+                  description: "ID único de la transferencia (PK)."
+                  tests: [unique, not_null]
+                - name: from_account_id
+                  description: "Cuenta origen (FK hacia accounts.account_id)."
+                  tests:
+                      - not_null
+                      - relationships:
+                            field: account_id
+                            to: source('raw_fintech', 'finanzas_accounts')
+                - name: to_account_id
+                  description: "Cuenta destino (FK hacia accounts.account_id)."
+                  tests: [not_null]
+                - name: amount
+                  description: "Monto transferido."
+                - name: transfer_date
+                  description: "Fecha y hora de la transferencia."
+                - name: concept
+                  description: "Concepto o nota de la transferencia."
+                - name: status
+                  description: "Estado de la transferencia (completed, pending, cancelled)."
+                  tests:
+                      - accepted_values:
+                            arguments:
+                                values: ["completed", "pending", "cancelled"]
+                            severity: warn
