@@ -7,6 +7,7 @@ Plataforma de modelado de datos para **FintechFlow**, una institución financier
 ![dbt-workflow](images/fintech_img_readme.png)
 
 **Stack:** Python 3.13+ (para entorno virtual) · dbt-duckdb · SQL · DuckDB
+
 ---
 
 ## Contexto 
@@ -81,7 +82,7 @@ Construcción completa del pipeline y ejecución de tests:
 
 ---
 
-**Operación, logros y beneficios**
+## Operación, logros y beneficios
 
 * Reducción del 80% en bugs detectados en producción mediante el uso de tests preventivos en cada ejecución.
 * Aceleración del 50% en el tiempo de desarrollo de nuevos modelos de riesgo gracias al uso de macros y lógica modular reutilizable.
