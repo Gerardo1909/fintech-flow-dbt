@@ -87,8 +87,6 @@ Construcción completa del pipeline y ejecución de tests:
 * Modelos dbt en `models/`: 25 (12 de staging, 5 de intermediate y 8 de marts).
 * Tests: 85 tests genéricos declarados en archivos `.yml` (60 como items de lista y 25 en listas inline `tests: [...]`) y 8 tests singulares en `tests/`.
 * Snapshots: 1 (`snapshots/customers_snapshot.yml`).
-* Macros en `macros/`: 0 (el directorio solo contiene `.gitkeep`).
-* Seeds CSV en `seeds/`: 0 (el directorio solo contiene `.gitkeep`; las fuentes están declaradas en `models/staging/sources.yml`).
 
 ---
 
