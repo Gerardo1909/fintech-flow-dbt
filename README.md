@@ -1,5 +1,7 @@
 # FintechFlow Analytics - Modern Banking Data Platform
 
+A dbt project that models banking data (customers, accounts, loans and investments) for FintechFlow, a digital bank, on DuckDB. Raw CSV seeds are cleaned in staging, enriched with business logic in intermediate, and exposed as marts, including an SCD Type 2 customer dimension. Data integrity is enforced with generic and singular dbt tests, and the documentation lives alongside the code.
+
 ## Overview
 
 Plataforma de modelado de datos para **FintechFlow**, una institución financiera digital de próxima generación. El sistema transforma datos transaccionales crudos (clientes, cuentas, préstamos e inversiones) en modelos analíticos refinados siguiendo una arquitectura de capas, garantizando la integridad financiera mediante tests automatizados y documentación continua.
