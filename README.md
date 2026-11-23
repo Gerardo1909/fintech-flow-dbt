@@ -14,7 +14,7 @@ Plataforma de modelado de datos para **FintechFlow**, una institución financier
 
 Anteriormente se operaba con procesos financieros fragmentados mediante scripts SQL aislados, sin control de versiones ni validación de integridad transaccional. La falta de pruebas automáticas generaba discrepancias frecuentes en los balances de cuentas y reportes de riesgo crediticio.
 
-En base a eso el objetivo fue migrar y centralizar toda la lógica de transformación bancaria a un entorno profesional bajo dbt, estableciendo una estructura robusta de pruebas y documentación para garantizar la integridad del 100% de las transacciones.
+En base a eso el objetivo fue migrar y centralizar toda la lógica de transformación bancaria a un entorno profesional bajo dbt, estableciendo una estructura robusta de pruebas y documentación para garantizar la integridad de las transacciones.
 
 ---
 
@@ -49,7 +49,7 @@ dbt docs serve
 Asegúrate de tener instalado Python 3.13+ en tu máquina local. Luego ejecuta en la terminal el siguiente comando:
 
 ```cmd
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Para este entorno se asume el uso de datos locales. Los archivos de origen deben estar en formato CSV y ubicarse obligatoriamente en el directorio de seeds, ya que dbt los procesará como fuentes base (sources) para el pipeline.
@@ -82,11 +82,13 @@ Construcción completa del pipeline y ejecución de tests:
 
 ---
 
-## Operación, logros y beneficios
+## Operación y alcance del proyecto
 
-* Reducción del 80% en bugs detectados en producción mediante el uso de tests preventivos en cada ejecución.
-* Aceleración del 50% en el tiempo de desarrollo de nuevos modelos de riesgo gracias al uso de macros y lógica modular reutilizable.
-* Optimización del tiempo de onboarding de nuevos analistas, reduciéndolo de dos semanas a dos días.
+* Modelos dbt en `models/`: 25 (12 de staging, 5 de intermediate y 8 de marts).
+* Tests: 85 tests genéricos declarados en archivos `.yml` (60 como items de lista y 25 en listas inline `tests: [...]`) y 8 tests singulares en `tests/`.
+* Snapshots: 1 (`snapshots/customers_snapshot.yml`).
+* Macros en `macros/`: 0 (el directorio solo contiene `.gitkeep`).
+* Seeds CSV en `seeds/`: 0 (el directorio solo contiene `.gitkeep`; las fuentes están declaradas en `models/staging/sources.yml`).
 
 ---
 
